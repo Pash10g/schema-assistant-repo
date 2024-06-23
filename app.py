@@ -31,35 +31,35 @@ def auth_form():
 if 'authenticated' not in st.session_state:
     st.session_state.authenticated = False
 
-    def ai_chat(prompt, messages):
-        
-        message = client.beta.threads.messages.create(
-            thread_id=st.session_state.thread.id,
-            role="user",
-            content=prompt
-            )
-        run = client.beta.threads.runs.create_and_poll(
-            thread_id=st.session_state.thread.id,
-            assistant_id=assistant_id)
-
+def ai_chat(prompt, messages):
     
-        while not run.status == "completed":
-            
-            run = client.beta.threads.runs.create_and_poll(
-            thread_id=st.session_state.thread.id,
-            assistant_id=assistant_id)
-
-
-        resp_messages = client.beta.threads.messages.list(
+    message = client.beta.threads.messages.create(
         thread_id=st.session_state.thread.id,
-    )
-        for current_part in resp_messages.data[0].content:
-            if current_part.type == "text":
-                messages.markdown(current_part.text.value)
-            
+        role="user",
+        content=prompt
+        )
+    run = client.beta.threads.runs.create_and_poll(
+        thread_id=st.session_state.thread.id,
+        assistant_id=assistant_id)
 
 
-        st.session_state.messages.append({"role": "assistant", "content": resp_messages.data[0].content[0].text.value})
+    while not run.status == "completed":
+        
+        run = client.beta.threads.runs.create_and_poll(
+        thread_id=st.session_state.thread.id,
+        assistant_id=assistant_id)
+
+
+    resp_messages = client.beta.threads.messages.list(
+    thread_id=st.session_state.thread.id,
+)
+    for current_part in resp_messages.data[0].content:
+        if current_part.type == "text":
+            messages.markdown(current_part.text.value)
+        
+
+
+    st.session_state.messages.append({"role": "assistant", "content": resp_messages.data[0].content[0].text.value})
 
 
 if not st.session_state.authenticated:
